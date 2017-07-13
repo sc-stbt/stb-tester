@@ -176,74 +176,10 @@ class Position(namedtuple('Position', 'x y')):
 
 
 class Region(namedtuple('Region', 'x y right bottom')):
-    u"""
+    u"""Rectangular region within the video frame.
+
     ``Region(x, y, width=width, height=height)`` or
     ``Region(x, y, right=right, bottom=bottom)``
-
-    Rectangular region within the video frame.
-
-    For example, given the following regions a, b, and c::
-
-        - 01234567890123
-        0 ░░░░░░░░
-        1 ░a░░░░░░
-        2 ░░░░░░░░
-        3 ░░░░░░░░
-        4 ░░░░▓▓▓▓░░▓c▓
-        5 ░░░░▓▓▓▓░░▓▓▓
-        6 ░░░░▓▓▓▓░░░░░
-        7 ░░░░▓▓▓▓░░░░░
-        8     ░░░░░░b░░
-        9     ░░░░░░░░░
-
-    >>> a = Region(0, 0, width=8, height=8)
-    >>> b = Region(4, 4, right=13, bottom=10)
-    >>> c = Region(10, 4, width=3, height=2)
-    >>> a.right
-    8
-    >>> b.bottom
-    10
-    >>> b.contains(c), a.contains(b), c.contains(b)
-    (True, False, False)
-    >>> b.extend(x=6, bottom=-4) == c
-    True
-    >>> a.extend(right=5).contains(c)
-    True
-    >>> a.width, a.extend(x=3).width, a.extend(right=-3).width
-    (8, 5, 5)
-    >>> c.replace(bottom=10)
-    Region(x=10, y=4, right=13, bottom=10)
-    >>> Region.intersect(a, b)
-    Region(x=4, y=4, right=8, bottom=8)
-    >>> Region.intersect(a, b) == Region.intersect(b, a)
-    True
-    >>> Region.intersect(c, b) == c
-    True
-    >>> print Region.intersect(a, c)
-    None
-    >>> print Region.intersect(None, a)
-    None
-    >>> quadrant = Region(x=float("-inf"), y=float("-inf"), right=0, bottom=0)
-    >>> quadrant.translate(2, 2)
-    Region(x=-inf, y=-inf, right=2, bottom=2)
-    >>> c.translate(x=-9, y=-3)
-    Region(x=1, y=1, right=4, bottom=3)
-    >>> Region.intersect(Region.ALL, c) == c
-    True
-    >>> Region.ALL
-    Region.ALL
-    >>> print Region.ALL
-    Region.ALL
-    >>> c.above()
-    Region(x=10, y=-inf, right=13, bottom=4)
-    >>> c.below()
-    Region(x=10, y=6, right=13, bottom=inf)
-    >>> a.right_of()
-    Region(x=8, y=0, right=inf, bottom=8)
-    >>> a.right_of(width=2)
-    Region(x=8, y=0, right=10, bottom=8)
-    >>> c.left_of()
-    Region(x=-inf, y=4, right=10, bottom=6)
 
     .. py:attribute:: x
 
@@ -308,10 +244,6 @@ class Region(namedtuple('Region', 'x y right bottom')):
         Typically you'd use the ``right`` and ``bottom`` parameters of the
         ``Region`` constructor instead, but this factory function is useful
         if you need to create a ``Region`` from a tuple.
-
-        >>> extents = (4, 4, 13, 10)
-        >>> Region.from_extents(*extents)
-        Region(x=4, y=4, right=13, bottom=10)
         """
         return Region(x, y, right=right, bottom=bottom)
 
@@ -421,6 +353,78 @@ class Region(namedtuple('Region', 'x y right bottom')):
 
 
 Region.ALL = Region(x=-inf, y=-inf, right=inf, bottom=inf)
+
+
+def test_region():
+    """
+    Given the following regions a, b, and c::
+
+        - 01234567890123
+        0 ░░░░░░░░
+        1 ░a░░░░░░
+        2 ░░░░░░░░
+        3 ░░░░░░░░
+        4 ░░░░▓▓▓▓░░▓c▓
+        5 ░░░░▓▓▓▓░░▓▓▓
+        6 ░░░░▓▓▓▓░░░░░
+        7 ░░░░▓▓▓▓░░░░░
+        8     ░░░░░░b░░
+        9     ░░░░░░░░░
+
+    >>> a = Region(0, 0, width=8, height=8)
+    >>> b = Region(4, 4, right=13, bottom=10)
+    >>> c = Region(10, 4, width=3, height=2)
+    >>> a.right
+    8
+    >>> b.bottom
+    10
+    >>> b.contains(c), a.contains(b), c.contains(b)
+    (True, False, False)
+    >>> b.extend(x=6, bottom=-4) == c
+    True
+    >>> a.extend(right=5).contains(c)
+    True
+    >>> a.width, a.extend(x=3).width, a.extend(right=-3).width
+    (8, 5, 5)
+    >>> c.replace(bottom=10)
+    Region(x=10, y=4, right=13, bottom=10)
+    >>> Region.intersect(a, b)
+    Region(x=4, y=4, right=8, bottom=8)
+    >>> Region.intersect(a, b) == Region.intersect(b, a)
+    True
+    >>> Region.intersect(c, b) == c
+    True
+    >>> print Region.intersect(a, c)
+    None
+    >>> print Region.intersect(None, a)
+    None
+    >>> quadrant = Region(x=float("-inf"), y=float("-inf"), right=0, bottom=0)
+    >>> quadrant.translate(2, 2)
+    Region(x=-inf, y=-inf, right=2, bottom=2)
+    >>> c.translate(x=-9, y=-3)
+    Region(x=1, y=1, right=4, bottom=3)
+    >>> Region.intersect(Region.ALL, c) == c
+    True
+    >>> Region.ALL
+    Region.ALL
+    >>> print Region.ALL
+    Region.ALL
+    >>> c.above()
+    Region(x=10, y=-inf, right=13, bottom=4)
+    >>> c.below()
+    Region(x=10, y=6, right=13, bottom=inf)
+    >>> a.right_of()
+    Region(x=8, y=0, right=inf, bottom=8)
+    >>> a.right_of(width=2)
+    Region(x=8, y=0, right=10, bottom=8)
+    >>> c.left_of()
+    Region(x=-inf, y=4, right=10, bottom=6)
+
+    >>> extents = (4, 4, 13, 10)
+    >>> Region.from_extents(*extents)
+    Region(x=4, y=4, right=13, bottom=10)
+    """
+    pass
 
 
 def _bounding_box(a, b):
