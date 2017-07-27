@@ -126,15 +126,15 @@ class FixedFocusNavigator(object):
             sys.stderr.write(
                 "navigate_to: target=%r, current=%r, going to press %r\n"
                 % (target, current_value, key))
-            self._dut.press(key)
+            tr = wait_for_transition(key, region=self.current.region)
 
-            # Wait until selection changes
-            assert stbt.wait_until(
-                lambda: getattr(
-                    self.frame_object(frame=self._dut.get_frame()),
-                    property_name) !=
-                current_value)  # pylint:disable=cell-var-from-loop
-            self.current = self.frame_object(frame=self._dut.get_frame())
+            # In the future these needn't be assertions: We can cope with the
+            # value not changing and try going in the opposite direction
+            assert tr
+            current = self.frame_object(frame=tr.frame)
+            assert current and getattr(current, property_name) != current_value
+
+            self.current = current
 
             assert getattr(self.current, property_name) != original_value, (
                 "navigate_to wrapped around back to %s '%s' "
