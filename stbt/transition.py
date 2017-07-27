@@ -102,7 +102,7 @@ class _Transition(object):
                  dut=None):
 
         if dut is None:
-            self.dut = stbt
+            self.dut = stbt._dut
         else:
             self.dut = dut
 
